@@ -1,0 +1,19 @@
+# Keamanan (JANGAN PERNAH DIUPLOAD)
+.env
+.env.production
+.env.development
+
+# Folder Sampah/Cache System
+/writable/cache/
+/writable/debugbar/
+/writable/logs/
+/writable/session/
+/writable/uploads/
+
+# Folder Vendor (Jika pakai Composer, jika tidak biarkan saja)
+/vendor/
+/node_modules/
+
+# IDE settings (File settingan text editor)
+.vscode/
+.idea/
