@@ -3,7 +3,7 @@
 <?= $this->section('content'); ?>
 <div class="container-fluid">
 
-    <h1 class="h3 mb-4 text-gray-800">Generate Modul Ajar Baru (AI Deep Learning)</h1>
+    <h1 class="h3 mb-4 text-gray-800">Generate Perencanaan Pembelajaran Mendalam (PPM)</h1>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -63,23 +63,28 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="text-primary font-weight-bold">Tujuan Pembelajaran (Pilih dari Bank Data)</label>
-                            <select name="tp_id" id="tpSelect" class="form-control" required>
-                                <option value="">-- Pilih Mapel & Fase Terlebih Dahulu --</option>
+                            <label class="text-primary font-weight-bold">Referensi Tujuan Pembelajaran (Bank Data)</label>
+                            <select name="tp_id_ref" id="tpSelect" class="form-control">
+                                <option value="">-- Pilih Referensi TP (Opsional) --</option>
                                 <?php if(isset($list_tp) && !empty($list_tp)): ?>
                                     <?php foreach($list_tp as $tp): ?>
                                         <option value="<?= $tp['id'] ?>" 
                                                 data-fase="<?= $tp['fase'] ?>" 
-                                                data-mapel="<?= $tp['mapel_id'] ?>">
-                                            [Fase <?= $tp['fase'] ?>] <?= substr($tp['deskripsi_tp'], 0, 100) ?>...
+                                                data-mapel="<?= $tp['mapel_id'] ?>"
+                                                data-deskripsi="<?= esc($tp['deskripsi_tp']) ?>"> [Fase <?= $tp['fase'] ?>] <?= substr($tp['deskripsi_tp'], 0, 80) ?>...
                                         </option>
                                     <?php endforeach; ?>
-                                <?php else: ?>
-                                    <option value="" disabled>Data TP Kosong</option>
                                 <?php endif; ?>
                             </select>
-                            <small class="text-muted">TP otomatis difilter sesuai Mapel dan Fase.</small>
+                            <small class="text-muted">Pilih referensi untuk mengisi otomatis, atau ketik manual di bawah.</small>
                         </div>
+
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tujuan Pembelajaran (Bisa Diedit Manual)</label>
+                            <textarea name="tujuan_pembelajaran_manual" id="tpManual" class="form-control" rows="4" placeholder="Ketik Tujuan Pembelajaran di sini atau pilih dari referensi di atas..." required></textarea>
+                            <small class="text-danger font-italic">*Teks inilah yang akan digunakan oleh AI.</small>
+                        </div>
+
                     </div>
 
                     <div class="col-md-6">
@@ -159,13 +164,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const faseSelect = document.getElementById('faseSelect');
     const mapelSelect = document.getElementById('mapelSelect');
     const tpSelect   = document.getElementById('tpSelect');
+    const tpManual   = document.getElementById('tpManual'); // Textarea
     const allOptions = Array.from(tpSelect.querySelectorAll('option')); 
 
     function filterTp() {
         const selectedFase = faseSelect.value;
         const selectedMapel = mapelSelect.value;
         
-        tpSelect.innerHTML = '<option value="">-- Pilih Tujuan Pembelajaran --</option>';
+        tpSelect.innerHTML = '<option value="">-- Pilih Referensi TP (Opsional) --</option>';
 
         if (!selectedMapel) return;
 
@@ -182,11 +188,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if(!found) {
              const noData = document.createElement('option');
-             noData.text = "-- Tidak ada TP untuk Mapel & Fase ini --";
+             noData.text = "-- Tidak ada Referensi TP --";
              noData.disabled = true;
              tpSelect.appendChild(noData);
         }
     }
+
+    // LOGIKA COPY TEXT: Saat Dropdown Dipilih -> Copy ke Textarea
+    tpSelect.addEventListener('change', function() {
+        const selectedOption = tpSelect.options[tpSelect.selectedIndex];
+        const deskripsi = selectedOption.getAttribute('data-deskripsi');
+        if(deskripsi) {
+            tpManual.value = deskripsi; // Copy teks
+        }
+    });
 
     faseSelect.addEventListener('change', filterTp);
     mapelSelect.addEventListener('change', filterTp);

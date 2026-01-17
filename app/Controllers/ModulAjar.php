@@ -33,7 +33,7 @@ class ModulAjar extends BaseController
     public function create()
     {
         $data = [
-            'title' => 'Buat Modul Ajar Baru (AI Powered)',
+            'title' => 'Buat PPM (AI Powered)',
             'list_tp' => $this->referensiTpModel->findAll() 
         ];
         return view('modul_ajar/create', $data);
@@ -42,10 +42,11 @@ class ModulAjar extends BaseController
     // --- TAHAP 1: GENERATE MODUL UTAMA ---
     public function store()
     {
+        // Validasi Textarea Manual (Bukan tp_id lagi yang wajib)
         if (!$this->validate([
             'mapel' => 'required', 
             'kelas' => 'required',
-            'tp_id' => 'required', 
+            'tujuan_pembelajaran_manual' => 'required', // Wajib isi teks manual
             'jumlah_pertemuan' => 'required'
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -62,8 +63,10 @@ class ModulAjar extends BaseController
         ];
         $namaMapel = $mapelList[$post['mapel']] ?? 'Mata Pelajaran Umum';
 
-        $tpData = $this->referensiTpModel->find($post['tp_id']);
-        $tujuanPembelajaranText = $tpData ? $tpData['deskripsi_tp'] : 'Tujuan pembelajaran tidak ditemukan.';
+        // REVISI LOGIKA TP: Ambil dari Textarea Manual (Editable)
+        // tp_id_ref hanya disimpan jika ada (opsional)
+        $tujuanPembelajaranText = $post['tujuan_pembelajaran_manual'];
+        $tpIdRef = !empty($post['tp_id_ref']) ? $post['tp_id_ref'] : null;
 
         $rawProfil = $this->request->getPost('profil_pancasila'); 
         $stringProfil = is_array($rawProfil) ? implode(', ', $rawProfil) : "Mandiri, Bernalar Kritis";
@@ -130,7 +133,7 @@ class ModulAjar extends BaseController
                     $htmlLangkah .= "<h5><b>PERTEMUAN KE-{$sesi['pertemuan_ke']}</b></h5>";
                     $htmlLangkah .= "<b>Pendahuluan:</b><p>{$sesi['pendahuluan']}</p>";
                     $htmlLangkah .= "<b>Kegiatan Inti:</b><p>{$sesi['inti']}</p>";
-                    $htmlLangkah .= "<b>Penutup:</b><p>{$sesi['penutup']}</p><br>";
+                    $htmlLangkah .= "<b>Penutup:</b><p>{$sesi['penutup']}</p><br>"; 
                 }
             }
 
@@ -167,16 +170,18 @@ class ModulAjar extends BaseController
                 'materi'              => $post['materi'],
                 'alokasi_waktu'       => $post['alokasi_waktu'],
                 'model_belajar'       => $post['model_belajar'],
-                'tp_id'               => $post['tp_id'],
+                'tp_id'               => $tpIdRef, // Simpan ID Referensi (jika ada)
                 'jumlah_pertemuan'    => $post['jumlah_pertemuan'],
+
                 'identifikasi_murid'    => $identifikasiMurid,
                 'profil_pancasila'      => json_encode($content['profil_pancasila_deskripsi'] ?? []),
-                'tujuan_pembelajaran'   => $tujuanPembelajaranText,
+                'tujuan_pembelajaran'   => $tujuanPembelajaranText, // Simpan Teks yang sudah diedit
                 'pemahaman_bermakna'    => is_array($content['pemahaman_bermakna']) ? implode("<br>", $content['pemahaman_bermakna']) : ($content['pemahaman_bermakna'] ?? '-'),
                 'kerangka_pembelajaran' => json_encode($content['kerangka_pembelajaran'] ?? []),
                 'kegiatan_inti'         => $htmlLangkah, 
                 'media_pembelajaran'    => $mediaPembelajaran,
                 'asesmen_deskripsi'     => json_encode($content['asesmen_deskripsi'] ?? []),
+                
                 'lampiran_lkpd'         => null,
                 'lampiran_materi'       => null,
                 'lampiran_asesmen'      => null
@@ -197,8 +202,7 @@ class ModulAjar extends BaseController
 
         if (!$modul) return redirect()->to('/modulajar')->with('error', 'Data tidak ditemukan.');
 
-        // PROMPT AGRESIF: MEMAKSA JUMLAH & STRUKTUR
-        $prompt = "Kamu adalah staff ahli kementerian penddikan nasional di bidang kurikulum medeka yang ahli membuat perangkat asesmen khususnya tingkat pendidikan Sekolah Dasar.
+        $prompt = "Kamu adalah Guru SD Senior yang ahli membuat perangkat asesmen.
         
         DATA MODUL:
         - Mapel: {$modul['mapel']} Kelas {$modul['kelas']}
@@ -229,7 +233,6 @@ class ModulAjar extends BaseController
             'lampiran_asesmen': 'HTML Content (5 PG + Kunci, 5 Uraian + Skor, Rubrik Tabel)...'
         }";
 
-        // Tambah waktu eksekusi karena requestnya berat (Min 5 menit)
         set_time_limit(300); 
 
         try {
@@ -242,7 +245,6 @@ class ModulAjar extends BaseController
 
             if (!$content) throw new \Exception("Gagal membaca JSON Lampiran. Coba lagi.");
 
-            // Fungsi helper untuk memastikan data jadi string
             $safeString = function($input) {
                 if (is_array($input)) {
                     return implode("\n", array_map(function($i) { return is_array($i) ? json_encode($i) : $i; }, $input));
@@ -254,8 +256,6 @@ class ModulAjar extends BaseController
                 'lampiran_materi'  => $safeString($content['lampiran_materi'] ?? ''),
                 'lampiran_lkpd'    => $safeString($content['lampiran_lkpd'] ?? ''),
                 'lampiran_asesmen' => $safeString($content['lampiran_asesmen'] ?? ''),
-                
-                // Isi juga kolom legacy untuk jaga-jaga
                 'asesmen_sumatif'  => $safeString($content['lampiran_asesmen'] ?? '')
             ]);
 
