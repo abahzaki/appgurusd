@@ -38,10 +38,14 @@
     <div class="section-title">A. IDENTIFIKASI MURID</div>
     <div style="text-align: justify;">
         <?php 
-            // Fallback Identifikasi Murid
-            if (!empty($modul['identifikasi_murid']) && strlen($modul['identifikasi_murid']) > 5) {
-                echo $modul['identifikasi_murid'];
+            // CEK 1: Ambil data dari database
+            $identifikasi = $modul['identifikasi_murid'] ?? '';
+            
+            // CEK 2: Jika data kurang dari 5 karakter atau isinya cuma strip, dianggap kosong
+            if (!empty($identifikasi) && strlen($identifikasi) > 5 && $identifikasi != '-') {
+                echo $identifikasi;
             } else {
+                // FALLBACK TEKS DEFAULT
                 echo "Murid di kelas ini memiliki latar belakang kemampuan akademik yang beragam. Sebagian siswa memiliki gaya belajar visual yang menyukai gambar, sementara yang lain kinestetik yang lebih suka praktik langsung.";
             }
         ?>
@@ -78,12 +82,15 @@
         <b>2. KERANGKA PEMBELAJARAN</b>
         <?php 
             $kerangka = json_decode($modul['kerangka_pembelajaran'] ?? '[]', true);
+            
+            // SIAPKAN MODEL CADANGAN DARI PILIHAN USER
+            $modelDipilih = !empty($modul['model_belajar']) ? $modul['model_belajar'] : 'Problem Based Learning';
         ?>
         
         <div class="sub-point">
             a. Praktik Pedagogik
             <div style="margin-left: 15px;">
-                <?= !empty($kerangka['praktik_pedagogik']) ? $kerangka['praktik_pedagogik'] : "Model " . esc($modul['model_belajar']) . " dengan pendekatan diskusi interaktif." ?>
+                <?= !empty($kerangka['praktik_pedagogik']) ? $kerangka['praktik_pedagogik'] : "Penerapan model <b>" . esc($modelDipilih) . "</b> dengan pendekatan saintifik dan diskusi interaktif." ?>
             </div>
         </div>
         
@@ -97,14 +104,14 @@
         <div class="sub-point">
             c. Lingkungan Pembelajaran
             <div style="margin-left: 15px;">
-                <?= !empty($kerangka['lingkungan']) ? $kerangka['lingkungan'] : 'Ruang kelas yang disusun berkelompok.' ?>
+                <?= !empty($kerangka['lingkungan']) ? $kerangka['lingkungan'] : 'Ruang kelas yang disusun berkelompok untuk mendukung kolaborasi.' ?>
             </div>
         </div>
 
         <div class="sub-point">
             d. Pemanfaatan Digital
             <div style="margin-left: 15px;">
-                <?= !empty($kerangka['digital']) ? $kerangka['digital'] : 'Menggunakan proyektor dan slide presentasi.' ?>
+                <?= !empty($kerangka['digital']) ? $kerangka['digital'] : 'Menggunakan proyektor untuk menayangkan materi visual dan slide presentasi.' ?>
             </div>
         </div>
     </div>
@@ -117,8 +124,8 @@
     <div class="section-title">E. MEDIA PEMBELAJARAN</div>
     <div>
         <?php 
-            // Bersihkan kata 'HTML'
-            $mediaClean = str_ireplace('HTML', '', $modul['media_pembelajaran']);
+            $mediaRaw = $modul['media_pembelajaran'];
+            $mediaClean = str_ireplace('HTML', '', $mediaRaw);
             echo $mediaClean;
         ?>
     </div>
@@ -144,14 +151,10 @@
     <br><br>
     
     <?php
-        // Cek Nama Kepala Sekolah (Prioritas: kepala_sekolah -> nama_kepsek -> titik-titik)
         $namaKepsek = !empty($sekolah['kepala_sekolah']) ? $sekolah['kepala_sekolah'] : ($sekolah['nama_kepsek'] ?? '..........................');
         $nipKepsek  = !empty($sekolah['nip_kepala_sekolah']) ? $sekolah['nip_kepala_sekolah'] : ($sekolah['nip_ks'] ?? $sekolah['nip_kepsek'] ?? '..........................');
-        
-        // Cek Nama Guru
         $namaGuru   = !empty($dataKelas['nama_guru']) ? $dataKelas['nama_guru'] : ($dataKelas['wali_kelas'] ?? session()->get('nama') ?? '..........................');
         $nipGuru    = !empty($dataKelas['nip_guru']) ? $dataKelas['nip_guru'] : ($dataKelas['nip_wali'] ?? '..........................');
-        
         $kota       = $sekolah['kabupaten_kota'] ?? 'Bondowoso';
     ?>
 
@@ -171,19 +174,29 @@
         </tr>
     </table>
     
-    <?php if(!empty($modul['lampiran_lkpd']) || !empty($modul['asesmen_sumatif'])): ?>
+    <?php if(!empty($modul['lampiran_lkpd']) || !empty($modul['lampiran_asesmen']) || !empty($modul['asesmen_sumatif']) || !empty($modul['lampiran_materi'])): ?>
         <br clear="all" style="page-break-before:always" />
         <p class="title">LAMPIRAN</p>
         
         <?php if(!empty($modul['lampiran_lkpd'])): ?>
-            <div class="section-title">1. ASESMEN FORMATIF (LKPD & RUBRIK)</div>
+            <div class="section-title">1. LEMBAR KERJA PESERTA DIDIK (LKPD)</div>
             <?= $modul['lampiran_lkpd'] ?>
         <?php endif; ?>
 
-        <?php if(!empty($modul['asesmen_sumatif'])): ?>
-            <div class="section-title">2. ASESMEN SUMATIF (SOAL)</div>
+        <?php if(!empty($modul['lampiran_asesmen'])): ?>
+            <div class="section-title">2. INSTRUMEN PENILAIAN LENGKAP</div>
+            <?= $modul['lampiran_asesmen'] ?>
+        <?php elseif(!empty($modul['asesmen_sumatif'])): ?>
+            <div class="section-title">2. ASESMEN SUMATIF</div>
             <?= $modul['asesmen_sumatif'] ?>
         <?php endif; ?>
+        
+        <?php if(!empty($modul['lampiran_materi'])): ?>
+            <br clear="all" style="page-break-before:always" />
+            <div class="section-title">3. BAHAN BACAAN</div>
+            <?= $modul['lampiran_materi'] ?>
+        <?php endif; ?>
+
     <?php endif; ?>
 
 </body>

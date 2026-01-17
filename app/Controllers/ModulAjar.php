@@ -26,14 +26,14 @@ class ModulAjar extends BaseController
     public function index()
     {
         $userId = session()->get('id');
-        $data = ['title' => 'Daftar Modul Ajar', 'modul' => $this->modulModel->getAllByUser($userId)];
+        $data = ['title' => 'Daftar PPM', 'modul' => $this->modulModel->getAllByUser($userId)];
         return view('modul_ajar/index', $data);
     }
 
     public function create()
     {
         $data = [
-            'title' => 'Buat PPM (AI Powered)',
+            'title' => 'Buat PPM Baru (AI Powered)',
             'list_tp' => $this->referensiTpModel->findAll() 
         ];
         return view('modul_ajar/create', $data);
@@ -42,11 +42,11 @@ class ModulAjar extends BaseController
     // --- TAHAP 1: GENERATE MODUL UTAMA ---
     public function store()
     {
-        // Validasi Textarea Manual (Bukan tp_id lagi yang wajib)
+        // Validasi
         if (!$this->validate([
             'mapel' => 'required', 
             'kelas' => 'required',
-            'tujuan_pembelajaran_manual' => 'required', // Wajib isi teks manual
+            'tujuan_pembelajaran_manual' => 'required',
             'jumlah_pertemuan' => 'required'
         ])) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -63,8 +63,7 @@ class ModulAjar extends BaseController
         ];
         $namaMapel = $mapelList[$post['mapel']] ?? 'Mata Pelajaran Umum';
 
-        // REVISI LOGIKA TP: Ambil dari Textarea Manual (Editable)
-        // tp_id_ref hanya disimpan jika ada (opsional)
+        // Ambil TP dari Manual Input
         $tujuanPembelajaranText = $post['tujuan_pembelajaran_manual'];
         $tpIdRef = !empty($post['tp_id_ref']) ? $post['tp_id_ref'] : null;
 
@@ -133,34 +132,39 @@ class ModulAjar extends BaseController
                     $htmlLangkah .= "<h5><b>PERTEMUAN KE-{$sesi['pertemuan_ke']}</b></h5>";
                     $htmlLangkah .= "<b>Pendahuluan:</b><p>{$sesi['pendahuluan']}</p>";
                     $htmlLangkah .= "<b>Kegiatan Inti:</b><p>{$sesi['inti']}</p>";
-                    $htmlLangkah .= "<b>Penutup:</b><p>{$sesi['penutup']}</p><br>"; 
+                    $htmlLangkah .= "<b>Penutup:</b><p>{$sesi['penutup']}</p><br>";
                 }
             }
 
-            // Sanitasi Identifikasi Murid
+            // ===[ LOGIKA SMART SEARCH & SANITASI DATA (ANTI ERROR) ]===
+            
+            // 1. Cari Identifikasi Murid di berbagai kemungkinan key AI
             $rawIdentifikasi = $content['identifikasi_murid'] 
                             ?? $content['identifikasi_siswa'] 
-                            ?? $content['identifikasi_peserta_didik'] 
+                            ?? $content['identifikasi_peserta_didik']
+                            ?? $content['profil_peserta_didik'] 
                             ?? '-';
 
+            // 2. Pastikan jadi String (Kalau Array, gabung paksa)
             if (is_array($rawIdentifikasi)) {
-                $identifikasiMurid = implode("\n", array_map(function($item) {
+                $identifikasiMurid = implode(". ", array_map(function($item) {
                     return is_array($item) ? json_encode($item) : $item;
                 }, $rawIdentifikasi));
             } else {
                 $identifikasiMurid = (string) $rawIdentifikasi;
             }
 
-            // Sanitasi Media Pembelajaran
+            // 3. Sanitasi Media Pembelajaran
             $rawMedia = $content['media_pembelajaran'] ?? '';
             if (is_array($rawMedia)) {
-                $mediaPembelajaran = implode("\n", array_map(function($item) {
+                $mediaPembelajaran = implode("<br>", array_map(function($item) {
                      return is_array($item) ? json_encode($item) : $item;
                 }, $rawMedia));
             } else {
                 $mediaPembelajaran = (string) $rawMedia;
             }
 
+            // Simpan ke Database
             $this->modulModel->save([
                 'user_id'             => $userId,
                 'sekolah'             => 'UPTD SPF SDN Contoh', 
@@ -170,12 +174,12 @@ class ModulAjar extends BaseController
                 'materi'              => $post['materi'],
                 'alokasi_waktu'       => $post['alokasi_waktu'],
                 'model_belajar'       => $post['model_belajar'],
-                'tp_id'               => $tpIdRef, // Simpan ID Referensi (jika ada)
+                'tp_id'               => $tpIdRef,
                 'jumlah_pertemuan'    => $post['jumlah_pertemuan'],
 
                 'identifikasi_murid'    => $identifikasiMurid,
                 'profil_pancasila'      => json_encode($content['profil_pancasila_deskripsi'] ?? []),
-                'tujuan_pembelajaran'   => $tujuanPembelajaranText, // Simpan Teks yang sudah diedit
+                'tujuan_pembelajaran'   => $tujuanPembelajaranText,
                 'pemahaman_bermakna'    => is_array($content['pemahaman_bermakna']) ? implode("<br>", $content['pemahaman_bermakna']) : ($content['pemahaman_bermakna'] ?? '-'),
                 'kerangka_pembelajaran' => json_encode($content['kerangka_pembelajaran'] ?? []),
                 'kegiatan_inti'         => $htmlLangkah, 
@@ -194,7 +198,7 @@ class ModulAjar extends BaseController
         }
     }
     
-    // --- TAHAP 2: GENERATE LAMPIRAN (DIPERKETAT JUMLAH SOALNYA) ---
+    // --- TAHAP 2: GENERATE LAMPIRAN (TETAP SAMA SEPERTI YANG BAGUS) ---
     public function generateLampiran($id)
     {
         $userId = session()->get('id');
@@ -203,34 +207,24 @@ class ModulAjar extends BaseController
         if (!$modul) return redirect()->to('/modulajar')->with('error', 'Data tidak ditemukan.');
 
         $prompt = "Kamu adalah Guru SD Senior yang ahli membuat perangkat asesmen.
-        
-        DATA MODUL:
-        - Mapel: {$modul['mapel']} Kelas {$modul['kelas']}
-        - Materi: {$modul['materi']}
-        - TP: {$modul['tujuan_pembelajaran']}
-        - Jml Pertemuan: {$modul['jumlah_pertemuan']}
+        DATA MODUL: Mapel: {$modul['mapel']} Kelas {$modul['kelas']}, Materi: {$modul['materi']}, TP: {$modul['tujuan_pembelajaran']}, Jml Pertemuan: {$modul['jumlah_pertemuan']}
         
         TUGAS ANDA (WAJIB LENGKAP):
         Buatlah 3 Lampiran dalam format JSON berisi HTML.
         
         INSTRUKSI KHUSUS (JANGAN DIKURANGI):
         1. [lampiran_materi]: Buat ringkasan materi bacaan yang menarik (min 500 kata).
-        
-        2. [lampiran_lkpd]:
-           - Buatlah LKPD terpisah untuk SETIAP PERTEMUAN (Total {$modul['jumlah_pertemuan']} LKPD).
-           - Struktur LKPD: Judul, Petunjuk, Aktivitas Kelompok.
-           - WAJIB ADA: Minimal 5 Soal Isian/Essay Latihan di setiap LKPD per pertemuan. JANGAN CUMA 2 SOAL.
-        
-        3. [lampiran_asesmen]:
-           - SUMATIF: Buat Minimal 5 Soal Pilihan Ganda (Lengkap dengan Kunci Jawaban & Skor).
-           - URAIAN: Buat Minimal 5 Soal Uraian (Lengkap dengan Pedoman Penskoran per soal).
-           - RUBRIK: Buat Tabel Rubrik Penilaian Sikap (Observasi) & Keterampilan.
+        2. [lampiran_lkpd]: Buat LKPD terpisah untuk SETIAP PERTEMUAN. WAJIB ADA: Minimal 5 Soal Isian/Essay Latihan di setiap LKPD.
+        3. [lampiran_asesmen]: 
+           - SUMATIF: Minimal 5 Soal Pilihan Ganda (Lengkap dengan Kunci Jawaban).
+           - URAIAN: Minimal 5 Soal Uraian (Lengkap dengan Pedoman Penskoran).
+           - RUBRIK: Tabel Rubrik Penilaian Sikap & Keterampilan.
 
         OUTPUT JSON SCHEMA (HANYA JSON):
         {
             'lampiran_materi': 'HTML Article...',
-            'lampiran_lkpd': 'HTML Content (LKPD 1: 5 Soal, LKPD 2: 5 Soal)...',
-            'lampiran_asesmen': 'HTML Content (5 PG + Kunci, 5 Uraian + Skor, Rubrik Tabel)...'
+            'lampiran_lkpd': 'HTML Content...',
+            'lampiran_asesmen': 'HTML Content...'
         }";
 
         set_time_limit(300); 
@@ -246,9 +240,7 @@ class ModulAjar extends BaseController
             if (!$content) throw new \Exception("Gagal membaca JSON Lampiran. Coba lagi.");
 
             $safeString = function($input) {
-                if (is_array($input)) {
-                    return implode("\n", array_map(function($i) { return is_array($i) ? json_encode($i) : $i; }, $input));
-                }
+                if (is_array($input)) return implode("\n", array_map(function($i) { return is_array($i) ? json_encode($i) : $i; }, $input));
                 return (string) $input;
             };
 
@@ -259,13 +251,14 @@ class ModulAjar extends BaseController
                 'asesmen_sumatif'  => $safeString($content['lampiran_asesmen'] ?? '')
             ]);
 
-            return redirect()->to('/modulajar/edit/' . $id)->with('success', 'Lampiran LENGKAP (LKPD 5 Soal, Sumatif, Rubrik) berhasil dibuat!');
+            return redirect()->to('/modulajar/edit/' . $id)->with('success', 'Lampiran LENGKAP berhasil dibuat!');
 
         } catch (\Exception $e) {
             return redirect()->to('/modulajar/edit/' . $id)->with('error', 'Gagal generate lampiran: ' . $e->getMessage());
         }
     }
     
+    // Fungsi Pendukung Lainnya
     public function edit($id) { $userId = session()->get('id'); $modul = $this->modulModel->getOneByUser($id, $userId); if (!$modul) return redirect()->to('/modulajar'); return view('modul_ajar/edit', ['title'=>'Edit', 'modul'=>$modul]); }
     public function update($id) { $userId = session()->get('id'); if (!$this->modulModel->isOwner($id, $userId)) return redirect()->back(); $this->modulModel->update($id, $this->request->getPost()); return redirect()->to('/modulajar')->with('success', 'Disimpan'); }
     public function delete($id) { $userId = session()->get('id'); $modul = $this->modulModel->getOneByUser($id, $userId); if ($modul) $this->modulModel->delete($id); return redirect()->to('/modulajar')->with('success', 'Dihapus'); }

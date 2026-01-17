@@ -4,9 +4,9 @@
 <div class="container-fluid">
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Bank Modul Ajar Saya</h1>
+        <h1 class="h3 mb-0 text-gray-800">Bank PPM Saya</h1>
         <a href="<?= base_url('modulajar/create') ?>" class="btn btn-primary shadow-sm">
-            <i class="bi bi-plus-lg text-white-50"></i> Buat Modul Baru (AI)
+            <i class="bi bi-plus-lg text-white-50"></i> Buat PPM Baru (AI)
         </a>
     </div>
 
@@ -25,7 +25,7 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Modul Tersimpan</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Daftar PPM Tersimpan</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
