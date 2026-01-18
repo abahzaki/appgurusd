@@ -34,7 +34,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        'authGuard'     => \App\Filters\AuthGuard::class,
+        'auth' => \App\Filters\AuthFilter::class,
     ];
 
     /**
@@ -72,16 +72,26 @@ class Filters extends BaseFilters
      * }
      */
     public array $globals = [
-        'before' => [
-            // 'honeypot',
-            // 'csrf',
-            // 'invalidchars',
+       'before' => [
+        // 'honeypot',
+        // 'csrf',
+        
+        // Panggil satpam 'auth' di sini
+        'auth' => [
+            'except' => [
+                'login',
+                'login/*',
+                'register',    // Tambahkan ini biar orang bisa daftar tanpa login
+                'register/*',  // Tambahkan ini juga
+                '/',
+            ]
         ],
-        'after' => [
-            // 'honeypot',
-            // 'secureheaders',
-        ],
-    ];
+    ],
+    'after' => [
+        'toolbar',
+        // 'honeypot',
+    ],
+];
 
     /**
      * List of filter aliases that works on a
