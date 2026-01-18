@@ -167,6 +167,10 @@ $routes->post('rapor/update_setting', 'Rapor::update_setting');
 $routes->get('rapor/edit_deskripsi/(:num)', 'Rapor::edit_deskripsi/$1');
 $routes->post('rapor/simpan_deskripsi', 'Rapor::simpan_deskripsi');
 
+// --- ROUTES UNTUK TUTORIAL ---
+$routes->get('tutorial', 'Tutorial::index'); // Halaman depan tutorial
+$routes->get('tutorial/read/(:segment)', 'Tutorial::read/$1'); // Halaman baca detail (dinamis)
+
 
 // Hapus baris ini nanti setelah berhasil login
 

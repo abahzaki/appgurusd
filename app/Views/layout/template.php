@@ -94,6 +94,13 @@
 
             <?php if ($role == 'guru') : ?>
 
+                <a class="nav-link <?= ($uri->getSegment(1) == 'tutorial') ? 'active' : '' ?>" href="<?= base_url('tutorial') ?>">
+                    <div class="d-flex align-items-center">
+                    <i class="bi bi-question-circle"></i> 
+                         &nbsp; Panduan & Tutorial
+                    </div>
+                </a>
+
                 <a class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#collapseMaster" role="button" aria-expanded="false" aria-controls="collapseMaster">
                     <div class="d-flex align-items-center"><i class="bi bi-database-fill"></i> Data Master</div>
                     <i class="bi bi-chevron-down" style="font-size: 0.8rem;"></i>
