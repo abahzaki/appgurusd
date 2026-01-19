@@ -7,7 +7,7 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Form Input Modul</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Form Input Modul (Standar Permendikdasmen 13/2025)</h6>
         </div>
         <div class="card-body">
             
@@ -124,30 +124,45 @@
                 <hr>
                 
                 <div class="form-group">
-                    <label>Profil Pelajar Pancasila (Pilih Minimal 2)</label><br>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Beriman & Bertakwa">
-                        <label class="form-check-label">Beriman & Bertakwa</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Mandiri" checked>
-                        <label class="form-check-label">Mandiri</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Bernalar Kritis" checked>
-                        <label class="form-check-label">Bernalar Kritis</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kreatif">
-                        <label class="form-check-label">Kreatif</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Gotong Royong">
-                        <label class="form-check-label">Gotong Royong</label>
-                    </div>
-                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Berkebinekaan Global">
-                        <label class="form-check-label">Berkebinekaan Global</label>
+                    <label class="font-weight-bold text-dark">8 Dimensi Profil Lulusan (Pilih Minimal 2)</label><br>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Keimanan dan Ketakwaan terhadap Tuhan YME">
+                                <label class="form-check-label">Keimanan dan Ketakwaan thd Tuhan YME</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kewargaan">
+                                <label class="form-check-label">Kewargaan <small class="text-muted">(Ex: Kebhinekaan Global)</small></label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Penalaran Kritis" checked>
+                                <label class="form-check-label">Penalaran Kritis</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kreativitas">
+                                <label class="form-check-label">Kreativitas</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kolaborasi" checked>
+                                <label class="form-check-label">Kolaborasi <small class="text-muted">(Ex: Gotong Royong)</small></label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kemandirian">
+                                <label class="form-check-label">Kemandirian</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Kesehatan">
+                                <label class="form-check-label">Kesehatan <span class="badge badge-info">Baru</span></label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="profil_pancasila[]" value="Komunikasi">
+                                <label class="form-check-label">Komunikasi <span class="badge badge-info">Baru</span></label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -213,7 +228,7 @@ function showLoading() {
     if(form.checkValidity()) {
         Swal.fire({
             title: 'AI Sedang Bekerja...',
-            html: 'Menyusun Modul Ajar Deep Learning...<br>Estimasi 1-2 Menit.',
+            html: 'Menyusun Modul Ajar Deep Learning dengan Standar Terbaru...<br>Estimasi 1-2 Menit.',
             allowOutsideClick: false,
             showConfirmButton: false,
             willOpen: () => { Swal.showLoading() }

@@ -67,10 +67,12 @@ class ModulAjar extends BaseController
         $tujuanPembelajaranText = $post['tujuan_pembelajaran_manual'];
         $tpIdRef = !empty($post['tp_id_ref']) ? $post['tp_id_ref'] : null;
 
+        // UPDATE VARIABEL: String Profil (Disimpan ke DB tetap 'profil_pancasila' agar tidak merusak kolom lama)
         $rawProfil = $this->request->getPost('profil_pancasila'); 
-        $stringProfil = is_array($rawProfil) ? implode(', ', $rawProfil) : "Mandiri, Bernalar Kritis";
+        $stringProfil = is_array($rawProfil) ? implode(', ', $rawProfil) : "Kemandirian, Penalaran Kritis";
 
-        $prompt = "Kamu adalah seorang ahli kurikulum Merdeka dan Deep Learning yang berpengalaman selama 10 tahun dan fokus pada pendidikan di tingkat sekolah dasar.
+        // UPDATE PROMPT: Menggunakan Standar 8 Dimensi Profil Lulusan (Permendikdasmen 13/2025)
+        $prompt = "Kamu adalah seorang ahli kurikulum Merdeka dan Deep Learning yang berpengalaman. Gunakan standar terbaru Permendikdasmen Nomor 13 Tahun 2025.
         
         INFORMASI MODUL:
         - Mapel: {$namaMapel}
@@ -79,31 +81,32 @@ class ModulAjar extends BaseController
         - Alokasi Waktu: {$post['alokasi_waktu']}
         - Jml Pertemuan: {$post['jumlah_pertemuan']}
         - Model Belajar: {$post['model_belajar']}
-        - Profil Pancasila: {$stringProfil}
+        - Profil Lulusan (8 Dimensi): {$stringProfil}
         - TUJUAN PEMBELAJARAN (FIX): {$tujuanPembelajaranText}
 
         TUGAS ANDA:
-        Buat konten Modul Ajar profesional lengkap dalam format JSON.
+        Buat konten Modul Ajar/PPM profesional lengkap dalam format JSON.
         
-        INSTRUKSI KHUSUS (WAJIB DIPATUHI):
-        1. [Identifikasi Murid]: JANGAN KOSONG. Buatlah narasi realistis tentang kondisi umum siswa di fase ini yang memiliki kemampuan beragam (Auditori, Visual, Kinestetik) terkait materi ini.
-        2. [Kerangka Pembelajaran]: Wajib diisi detail dengan poin-poin berikut:
-           - Praktik Pedagogik: Sebutkan Model (misal PBL) dan Metode (misal Diskusi, Presentasi).
-           - Kemitraan Pembelajaran: Jika ada (misal Orang Tua), jika tidak ada tulis '-'.
-           - Lingkungan Pembelajaran: (misal: Kelas, Halaman Sekolah, Perpustakaan).
-           - Pemanfaatan Digital: WAJIB DIPISAH menjadi 'Perencanaan' (cari bahan di YT/Canva) dan 'Pelaksanaan' (tayang video/kuis).
-        3. [Langkah Pembelajaran]: Pecah jadi {$post['jumlah_pertemuan']} pertemuan. Setiap langkah inti WAJIB diakhiri label psikologis dalam kurung, contoh: (Memahami: Berkesadaran).
+        INSTRUKSI KHUSUS:
+        1. [Profil Lulusan]: Jabarkan bagaimana dimensi yang dipilih (dari 8 Dimensi: Iman Taqwa, Kewargaan, Penalaran Kritis, Kreativitas, Kolaborasi, Kemandirian, Kesehatan, Komunikasi) diterapkan dalam kegiatan.
+           Contoh: Jika 'Kesehatan' dipilih, masukkan aktivitas fisik/ergonomis. Jika 'Komunikasi', masukkan presentasi lisan.
+        
+        2. [Identifikasi Murid]: JANGAN KOSONG. Buatlah narasi realistis tentang keragaman (Visual, Auditori, Kinestetik).
+        
+        3. [Kerangka Pembelajaran]: Wajib diisi detail (Pedagogik, Kemitraan, Lingkungan, Digital).
+        
+        4. [Langkah Pembelajaran]: Pecah jadi {$post['jumlah_pertemuan']} pertemuan. Setiap langkah inti WAJIB diakhiri label psikologis dalam kurung, contoh: (Memahami: Berkesadaran).
 
         OUTPUT JSON SCHEMA (HANYA JSON):
         {
             'identifikasi_murid': 'Narasi panjang tentang keragaman murid...',
-            'profil_pancasila_deskripsi': [{'dimensi': 'Mandiri', 'deskripsi': 'Siswa mengerjakan LKPD sendiri...'}],
+            'profil_pancasila_deskripsi': [{'dimensi': 'Kesehatan', 'deskripsi': 'Siswa melakukan peregangan sebelum belajar...'}, {'dimensi': 'Komunikasi', 'deskripsi': 'Siswa mempresentasikan hasil...'}],
             'pemahaman_bermakna': ['Pertanyaan 1...', 'Pertanyaan 2...'],
             'kerangka_pembelajaran': {
-                'praktik_pedagogik': '<ul><li>Problem Based Learning (PBL)</li><li>Diskusi Kelompok & Presentasi</li></ul>',
+                'praktik_pedagogik': '<ul><li>...</li></ul>',
                 'kemitraan': '-',
-                'lingkungan': '<ul><li>Ruang Kelas yang diatur berkelompok</li><li>Lingkungan sekolah untuk observasi</li></ul>',
-                'digital': '<ul><li><b>Perencanaan:</b> Menyiapkan slide Canva dan video YouTube.</li><li><b>Pelaksanaan:</b> Menayangkan video simulasi dan kuis interaktif.</li></ul>'
+                'lingkungan': '<ul><li>...</li></ul>',
+                'digital': '<ul><li>...</li></ul>'
             },
             'langkah_pembelajaran': [
                 {'pertemuan_ke': 1, 'pendahuluan': '...', 'inti': '...', 'penutup': '...'}
@@ -138,14 +141,12 @@ class ModulAjar extends BaseController
 
             // ===[ LOGIKA SMART SEARCH & SANITASI DATA (ANTI ERROR) ]===
             
-            // 1. Cari Identifikasi Murid di berbagai kemungkinan key AI
             $rawIdentifikasi = $content['identifikasi_murid'] 
                             ?? $content['identifikasi_siswa'] 
                             ?? $content['identifikasi_peserta_didik']
                             ?? $content['profil_peserta_didik'] 
                             ?? '-';
 
-            // 2. Pastikan jadi String (Kalau Array, gabung paksa)
             if (is_array($rawIdentifikasi)) {
                 $identifikasiMurid = implode(". ", array_map(function($item) {
                     return is_array($item) ? json_encode($item) : $item;
@@ -154,7 +155,6 @@ class ModulAjar extends BaseController
                 $identifikasiMurid = (string) $rawIdentifikasi;
             }
 
-            // 3. Sanitasi Media Pembelajaran
             $rawMedia = $content['media_pembelajaran'] ?? '';
             if (is_array($rawMedia)) {
                 $mediaPembelajaran = implode("<br>", array_map(function($item) {
@@ -191,14 +191,14 @@ class ModulAjar extends BaseController
                 'lampiran_asesmen'      => null
             ]);
 
-            return redirect()->to('/modulajar')->with('success', 'Modul Utama berhasil dibuat! Silakan buat Lampiran di menu Edit.');
+            return redirect()->to('/modulajar')->with('success', 'Modul Utama (8 Dimensi) berhasil dibuat! Silakan buat Lampiran di menu Edit.');
 
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
     }
     
-    // --- TAHAP 2: GENERATE LAMPIRAN (TETAP SAMA SEPERTI YANG BAGUS) ---
+    // --- TAHAP 2: GENERATE LAMPIRAN (TETAP) ---
     public function generateLampiran($id)
     {
         $userId = session()->get('id');
