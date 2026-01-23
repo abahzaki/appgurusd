@@ -81,8 +81,10 @@ class Filters extends BaseFilters
             'except' => [
                 'login',
                 'login/*',
+                'logout',
                 'register',    // Tambahkan ini biar orang bisa daftar tanpa login
                 'register/*',  // Tambahkan ini juga
+                'auth/*',
                 '/',
             ]
         ],

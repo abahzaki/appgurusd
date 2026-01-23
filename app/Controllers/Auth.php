@@ -122,7 +122,7 @@ class Auth extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            // Kembali ke register dengan error
+            // Kalau input salah, balik ke register
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -131,28 +131,36 @@ class Auth extends BaseController
             'nama_lengkap' => $this->request->getVar('nama_lengkap'),
             'email'        => $this->request->getVar('email'),
             'password'     => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
-            'role'         => 'guru', // Default role Guru
-            'is_active'    => 0,      // Default NON-AKTIF
-            'expired_date' => null    // Belum punya masa aktif
+            'role'         => 'guru',
+            'is_active'    => 0,
+            'expired_date' => null
         ];
 
-        // 3. Simpan ke Database
-        $userModel->save($userData);
+        // 3. Simpan ke Database (DENGAN PENGECEKAN)
+        // Kita bungkus dalam IF agar tahu sukses atau gagal
+        if ($userModel->save($userData)) {
+            
+            // --- SUKSES SIMPAN ---
+            
+            // Link WA
+            $no_wa = "6285123572422"; // Ganti dengan No HP Anda
+            $pesan = "Halo Admin, saya baru saja mendaftar di App Guru SD. Mohon aktivasi akun saya. Email: " . $userData['email'];
+            $link_wa = "https://wa.me/{$no_wa}?text=" . rawurlencode($pesan);
 
-        // 4. Redirect ke Login
-        // --- LOGIKA PESAN WHATSAPP OTOMATIS (REGISTER) ---
-        $no_wa = "6285123572422";
-        $pesan = "Halo, admin Trendi Media saya mau aktivasi App Guru SD, Terima kasih. Email saya: " . $this->request->getVar('email');
-        
-        $pesan_encoded = rawurlencode($pesan);
-        $link_wa = "https://wa.me/{$no_wa}?text={$pesan_encoded}";
+            // Pesan Alert HTML
+            $alert_html = "<strong>Registrasi Berhasil!</strong><br> 
+                           Akun Anda belum aktif. Silakan 
+                           <a href='{$link_wa}' target='_blank' class='fw-bold text-success' style='text-decoration:underline;'>
+                           KLIK DI SINI UNTUK AKTIVASI VIA WA</a>";
 
-        // Pesan HTML yang akan muncul di Alert Login
-        $alert_html = "Registrasi Berhasil! <br> 
-                       Silakan <strong><a href='{$link_wa}' target='_blank' class='text-primary' style='text-decoration:underline;'>KLIK DI SINI</a></strong> 
-                       untuk konfirmasi aktivasi ke Admin via WA.";
+            // Set Flashdata dan lempar ke Login
+            session()->setFlashdata('msg', $alert_html); 
+            return redirect()->to('/login');
 
-        session()->setFlashdata('msg', $alert_html); // Simpan pesan HTML
-        return redirect()->to('/login');
+        } else {
+            // --- GAGAL SIMPAN ---
+            // Kembalikan ke halaman register dan kasih tau errornya apa (misal: database error)
+            return redirect()->back()->withInput()->with('errors', $userModel->errors());
+        }
     }
 }
