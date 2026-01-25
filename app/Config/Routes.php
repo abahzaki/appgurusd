@@ -171,6 +171,21 @@ $routes->post('rapor/simpan_deskripsi', 'Rapor::simpan_deskripsi');
 $routes->get('tutorial', 'Tutorial::index'); // Halaman depan tutorial
 $routes->get('tutorial/read/(:segment)', 'Tutorial::read/$1'); // Halaman baca detail (dinamis)
 
+$routes->get('auth/success', 'Auth::success'); // Halaman Terima Kasih
+
+
+// --- LAPORAN PERFORMA IKLAN (DASHBOARD SULTAN) ---
+// Kita bungkus dalam group 'admin' atau filter auth supaya aman
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    
+    // Halaman Laporan ROI
+    $routes->get('adsreport', 'AdsReport::index');
+    
+    // Proses Simpan Biaya Harian
+    $routes->post('adsreport/store', 'AdsReport::store_cost');
+
+});
+
 
 // Hapus baris ini nanti setelah berhasil login
 

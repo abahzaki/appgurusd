@@ -32,12 +32,11 @@ class Auth extends BaseController
             
             if ($verify_pass) {
                 
-                // 1. Cek Status Aktif (MODIFIKASI DI SINI)
+                // 1. Cek Status Aktif
                 if ($data['is_active'] == 0) {
                     
                     // --- LOGIKA PESAN WHATSAPP UNTUK LOGIN GAGAL ---
                     $no_wa = "6285123572422";
-                    // Pesan khusus untuk user yang gagal login
                     $pesan = "Halo Admin, saya sudah mendaftar tapi belum bisa login (Akun Belum Aktif). Mohon bantuannya untuk aktivasi. Email saya: " . $data['email'];
                     
                     $pesan_encoded = rawurlencode($pesan);
@@ -58,9 +57,8 @@ class Auth extends BaseController
                       // Opsional: Matikan status aktif di database
                       $model->save(['id' => $data['id'], 'is_active' => 0]); 
 
-                      // --- LOGIKA WA UNTUK EXPIRED (OPSIONAL) ---
                       $no_wa = "6285123572422";
-                      $pesan_exp = "Halo Admin, masa aktif akun saya sudah habis. Saya ingin perpanjang langganan. Email: " . $data['email'];
+                      $pesan_exp = "Halo Admin, masa aktif akun saya sudah habis. Email: " . $data['email'];
                       $link_wa_exp = "https://wa.me/{$no_wa}?text=" . rawurlencode($pesan_exp);
                       
                       $alert_exp = "Masa aktif langganan Anda telah berakhir.<br>
@@ -80,7 +78,6 @@ class Auth extends BaseController
                 ];
                 $session->set($ses_data);
                 
-                // Login Sukses -> Ke Dashboard
                 return redirect()->to('/dashboard');
 
             } else {
@@ -99,13 +96,20 @@ class Auth extends BaseController
         return redirect()->to('/login');
     }
 
-    // --- FITUR BARU: REGISTRASI ---
+    // --- BAGIAN REGISTRASI (INI YANG KITA MODIFIKASI) ---
     
     public function register()
     {
         if (session()->get('isLoggedIn')) {
             return redirect()->to('/dashboard');
         }
+
+        // [MODIFIKASI 1] Tangkap Tracking Iklan dari URL
+        // Jika linknya trendimedia.my.id/register?source=fb_ads
+        if ($this->request->getGet('source')) {
+            session()->set('traffic_source', $this->request->getGet('source'));
+        }
+
         return view('auth/register');
     }
 
@@ -122,9 +126,11 @@ class Auth extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            // Kalau input salah, balik ke register
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
+
+        // [MODIFIKASI 2] Ambil Tracking Source dari Session
+        $traffic_source = session()->get('traffic_source') ?? 'organic';
 
         // 2. Siapkan Data
         $userData = [
@@ -133,34 +139,44 @@ class Auth extends BaseController
             'password'     => password_hash($this->request->getVar('password'), PASSWORD_DEFAULT),
             'role'         => 'guru',
             'is_active'    => 0,
-            'expired_date' => null
+            'expired_date' => null,
+            'traffic_source' => $traffic_source // Simpan sumber traffic (organic/fb_ads)
         ];
 
-        // 3. Simpan ke Database (DENGAN PENGECEKAN)
-        // Kita bungkus dalam IF agar tahu sukses atau gagal
+        // 3. Simpan ke Database
         if ($userModel->save($userData)) {
             
-            // --- SUKSES SIMPAN ---
+            // [MODIFIKASI 3] Redirect ke Halaman SUCCESS (Bukan Login)
             
-            // Link WA
-            $no_wa = "6285123572422"; // Ganti dengan No HP Anda
-            $pesan = "Halo Admin, saya baru saja mendaftar di App Guru SD. Mohon aktivasi akun saya. Email: " . $userData['email'];
-            $link_wa = "https://wa.me/{$no_wa}?text=" . rawurlencode($pesan);
+            // Kita simpan data sementara (Flashdata) untuk ditampilkan di halaman Success
+            // Supaya kita bisa menyapa: "Terima kasih, Pak Budi"
+            $dataSession = [
+                'email_baru' => $userData['email'],
+                'nama_baru'  => $userData['nama_lengkap']
+            ];
+            session()->setFlashdata('register_success', $dataSession);
 
-            // Pesan Alert HTML
-            $alert_html = "<strong>Registrasi Berhasil!</strong><br> 
-                           Akun Anda belum aktif. Silakan 
-                           <a href='{$link_wa}' target='_blank' class='fw-bold text-success' style='text-decoration:underline;'>
-                           KLIK DI SINI UNTUK AKTIVASI VIA WA</a>";
-
-            // Set Flashdata dan lempar ke Login
-            session()->setFlashdata('msg', $alert_html); 
-            return redirect()->to('/login');
+            // LEMPAR KE METHOD SUCCESS DI BAWAH
+            return redirect()->to('auth/success'); 
 
         } else {
-            // --- GAGAL SIMPAN ---
-            // Kembalikan ke halaman register dan kasih tau errornya apa (misal: database error)
+            // Gagal Simpan
             return redirect()->back()->withInput()->with('errors', $userModel->errors());
         }
+    }
+
+    // [MODIFIKASI 4] Method Baru: Halaman Success Page
+    // Ini halaman yang akan muncul setelah user berhasil daftar
+    public function success()
+    {
+        // Pengecekan Keamanan Sederhana:
+        // Jika tidak ada data 'register_success', berarti orang ini nyasar (bukan habis daftar)
+        // Kembalikan ke login
+        if (!session()->getFlashdata('register_success')) {
+            return redirect()->to('/login');
+        }
+        
+        // Panggil View Halaman Terima Kasih
+        return view('auth/success');
     }
 }

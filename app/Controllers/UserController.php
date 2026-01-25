@@ -16,42 +16,111 @@ class UserController extends BaseController
 
     public function index()
     {
-        // dd(session()->get());
-        // Cek apakah yang login adalah Admin? (Security sederhana)
+        // Cek Admin
         if (session()->get('role') != 'admin') {
             return redirect()->to('/dashboard');
         }
 
         $data = [
             'title' => 'Manajemen User',
-            // Kita ambil semua user, urutkan dari yang terbaru daftar
             'users' => $this->userModel->orderBy('id', 'DESC')->findAll()
         ];
         
-        // Pastikan Bapak menyesuaikan nama file layout dashboard Bapak di sini
         return view('user/index', $data);
     }
 
-    // --- FITUR UTAMA: AKTIVASI ---
+    // --- FITUR UTAMA: AKTIVASI DENGAN CAPI ---
     public function activate($id)
     {
-        // 1. Hitung tanggal 6 bulan ke depan dari HARI INI
-        // Jika Bapak jual per tahun, ganti '+6 months' jadi '+1 year'
+        // 1. Ambil Data User DULU (Penting untuk CAPI)
+        $user = $this->userModel->find($id);
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User tidak ditemukan!');
+        }
+
+        // 2. Hitung Tanggal Expired (6 Bulan)
         $masaAktif = date('Y-m-d', strtotime('+6 months'));
 
-        // 2. Update status User
+        // 3. Update Status User di Database (Aktifkan)
         $this->userModel->save([
             'id'           => $id,
-            'is_active'    => 1,          // Hidupkan akun
-            'expired_date' => $masaAktif  // Set tanggal kadaluarsa
+            'is_active'    => 1,           // Hidupkan akun
+            'expired_date' => $masaAktif   // Set tanggal kadaluarsa
         ]);
 
-        // 3. Kembali ke tabel dengan pesan sukses
-        session()->setFlashdata('success', 'User berhasil diaktifkan hingga tanggal: ' . date('d-m-Y', strtotime($masaAktif)));
+        // 4. --- LOGIKA FACEBOOK CAPI (SERVER-SIDE TRACKING) ---
+        $pesan_tambahan = "";
+        
+        try {
+            // Kita panggil fungsi khusus pengirim sinyal ke FB
+            // Ini akan mengirim event 'Purchase' senilai Rp 197.500
+            $response = $this->sendPurchaseEvent($user);
+            
+            // Cek sekilas apakah berhasil (opsional)
+            $resData = json_decode($response, true);
+            if(isset($resData['events_received'])) {
+                $pesan_tambahan = " & Data Purchase Terkirim ke FB!";
+            }
+        } catch (\Exception $e) {
+            // Jika koneksi ke FB gagal, jangan biarkan aplikasi error.
+            // Biarkan user tetap aktif, cuma laporannya gagal.
+            $pesan_tambahan = " (User aktif, tapi gagal lapor FB)";
+        }
+
+        // 5. Kembali ke tabel dengan pesan sukses
+        session()->setFlashdata('success', 'User berhasil diaktifkan hingga: ' . date('d-m-Y', strtotime($masaAktif)) . $pesan_tambahan);
         return redirect()->to('/user');
     }
 
-    // Fitur Non-Aktifkan (Jika ada yang melanggar/batal bayar)
+    // --- FUNGSI PRIVAT KHUSUS KIRIM CAPI (JANGAN DIUBAH KECUALI TOKEN) ---
+    private function sendPurchaseEvent($user)
+    {
+        // === KONFIGURASI META ADS ===
+        $pixelId = '1524088888679277'; // ID Pixel Bapak
+        
+        // [PENTING] GANTI TEKS DI BAWAH INI DENGAN TOKEN ASLI DARI EVENTS MANAGER
+        $token   = 'EAARNdMNrex0BQtEDQzPszwOZARsdkEwTGiJML0VQwEWL1j9jN2CLWoagI8mIi7nsokz4n7RZAsZCbfNMKXd67vCrjsU5UbivKHumZBTBefBJs3iDihp6cpf5wOe1X12zkBSiZBMNdS10nUhSkdbAY53vCkRrf5Tc3s5KZAETZCgw3MntpLKgADPRcLQZBLOcOqsCsAZDZD'; 
+
+        // Data Hash (Wajib di-hash SHA256 sesuai aturan privasi Meta)
+        $email_hash = hash('sha256', strtolower(trim($user['email'])));
+        
+        // Data Payload
+        $data = [
+            'data' => [
+                [
+                    'event_name' => 'Purchase',
+                    'event_time' => time(), // Waktu sekarang (Unix Timestamp)
+                    'action_source' => 'website',
+                    'user_data'  => [
+                        'em' => $email_hash, // Email user yang di-hash
+                        'external_id' => hash('sha256', $user['id']) // ID unik user
+                    ],
+                    'custom_data' => [
+                        'currency' => 'IDR',
+                        'value'    => 197500, // Nilai Konversi Real
+                        'content_name' => 'Paket Premium App Guru SD'
+                    ]
+                ]
+            ]
+            // Jika mau tracking source juga, bisa ditambahkan di 'opt_out' atau parameter lain,
+            // tapi payload standar di atas sudah cukup untuk trigger 'Sales'.
+        ];
+
+        // Kirim Request via cURL (Standar PHP untuk kirim data ke server lain)
+        $ch = curl_init("https://graph.facebook.com/v16.0/{$pixelId}/events?access_token={$token}");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return $result;
+    }
+
+    // Fitur Non-Aktifkan
     public function deactivate($id)
     {
         $this->userModel->save([
@@ -63,28 +132,26 @@ class UserController extends BaseController
         return redirect()->to('/user');
     }
 
-    // Fitur Reset Password (Oleh Admin)
+    // Fitur Reset Password
     public function resetPassword($id)
     {
-        // Password default baru
         $passwordDefault = '123456'; 
 
         $this->userModel->save([
             'id'       => $id,
-            'password' => password_hash($passwordDefault, PASSWORD_DEFAULT) // Hash ulang
+            'password' => password_hash($passwordDefault, PASSWORD_DEFAULT)
         ]);
 
         session()->setFlashdata('success', 'Password user berhasil direset menjadi: <b>' . $passwordDefault . '</b>');
         return redirect()->to('/user');
     }
 
-    // --- FITUR GANTI PASSWORD (USER MANDIRI) ---
+    // --- FITUR GANTI PASSWORD ---
 
     public function profile()
     {
         $data = [
             'title' => 'Profil Saya',
-            // Ambil data user yang sedang login
             'user' => $this->userModel->find(session()->get('id')) 
         ];
         return view('user/profile', $data);
@@ -92,7 +159,6 @@ class UserController extends BaseController
 
     public function updatePassword()
     {
-        // 1. Validasi Input
         if (!$this->validate([
             'pass_lama' => 'required',
             'pass_baru' => 'required|min_length[6]',
@@ -101,18 +167,15 @@ class UserController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // 2. Ambil data user saat ini
         $idUser = session()->get('id');
         $user = $this->userModel->find($idUser);
 
-        // 3. Cek apakah Password Lama benar?
         $passLamaInput = $this->request->getVar('pass_lama');
         
         if (!password_verify($passLamaInput, $user['password'])) {
             return redirect()->back()->with('error', 'Password Lama salah!');
         }
 
-        // 4. Jika benar, simpan Password Baru
         $this->userModel->save([
             'id' => $idUser,
             'password' => password_hash($this->request->getVar('pass_baru'), PASSWORD_DEFAULT)

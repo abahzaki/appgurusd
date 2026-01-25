@@ -91,6 +91,14 @@
                 </a>
             <?php endif; ?>
 
+            <?php if(session()->get('role') == 'admin'): ?>
+    <li class="nav-item <?= ($uri->getSegment(1) == 'adsreport') ? 'active' : ''; ?>">
+        <a class="nav-link" href="<?= base_url('adsreport'); ?>">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Laporan Iklan (ROI)</span></a>
+    </li>
+<?php endif; ?>
+
 
             <?php if ($role == 'guru') : ?>
 
