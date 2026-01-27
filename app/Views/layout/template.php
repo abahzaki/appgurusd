@@ -79,34 +79,31 @@
             <?php $role = session()->get('role'); ?>
             <?php $uri = service('uri'); ?>
 
-            <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 d-block" style="font-size: 0.7rem;">Menu Utama</small>
-            
-            <a href="<?= base_url('dashboard') ?>" class="nav-link <?= ($uri->getSegment(1) == 'dashboard') ? 'active' : '' ?>">
-                <i class="bi bi-grid-fill"></i> Dashboard
-            </a>
-
             <?php if ($role == 'admin') : ?>
+                <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 d-block" style="font-size: 0.7rem;">Administrator</small>
+                
+                <a href="<?= base_url('dashboard') ?>" class="nav-link <?= ($uri->getSegment(1) == 'dashboard') ? 'active' : '' ?>">
+                    <i class="bi bi-grid-fill"></i> Dashboard
+                </a>
+                
                 <a href="<?= base_url('user') ?>" class="nav-link <?= ($uri->getSegment(1) == 'user') ? 'active' : '' ?>">
                     <i class="bi bi-people-fill"></i> Manajemen User
                 </a>
-            <?php endif; ?>
 
-            <?php if(session()->get('role') == 'admin'): ?>
-    <li class="nav-item <?= ($uri->getSegment(1) == 'adsreport') ? 'active' : ''; ?>">
-        <a class="nav-link" href="<?= base_url('adsreport'); ?>">
-            <i class="bi bi-graph-up-arrow"></i>
-            <span>Laporan Iklan (ROI)</span></a>
-    </li>
-<?php endif; ?>
+                <a class="nav-link <?= ($uri->getSegment(1) == 'adsreport') ? 'active' : ''; ?>" href="<?= base_url('adsreport'); ?>">
+                    <i class="bi bi-graph-up-arrow"></i> Laporan Iklan (ROI)
+                </a>
+                
+                <hr class="border-secondary my-4">
+            <?php endif; ?>
 
 
             <?php if ($role == 'guru') : ?>
 
-                <a class="nav-link <?= ($uri->getSegment(1) == 'tutorial') ? 'active' : '' ?>" href="<?= base_url('tutorial') ?>">
-                    <div class="d-flex align-items-center">
-                    <i class="bi bi-question-circle"></i> 
-                         &nbsp; Panduan & Tutorial
-                    </div>
+                <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 d-block" style="font-size: 0.7rem;">Menu Utama</small>
+                
+                <a href="<?= base_url('dashboard') ?>" class="nav-link <?= ($uri->getSegment(1) == 'dashboard') ? 'active' : '' ?>">
+                    <i class="bi bi-grid-fill"></i> Dashboard
                 </a>
 
                 <a class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#collapseMaster" role="button" aria-expanded="false" aria-controls="collapseMaster">
@@ -127,67 +124,81 @@
                 <hr class="sidebar-divider" style="border-color: rgba(255,255,255,0.1);">
                 
                 <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-2 d-block" style="font-size: 0.7rem;">Penilaian</small>
-
-                <a href="<?= base_url('nilai') ?>" class="nav-link <?= ($uri->getSegment(1) == 'nilai') ? 'active' : '' ?>">
-                    <i class="bi bi-pencil-square"></i> Input Nilai
-                </a>
-
-                <a href="<?= base_url('ekskul') ?>" class="nav-link <?= ($uri->getSegment(1) == 'ekskul') ? 'active' : '' ?>">
-                    <i class="bi bi-trophy"></i> Input Ekskul
-                </a>
-
-                <a href="<?= base_url('kokurikuler') ?>" class="nav-link <?= ($uri->getSegment(1) == 'kokurikuler') ? 'active' : '' ?>">
-                    <i class="bi bi-people-fill"></i> Projek Kokurikuler
-                </a>
-
-                <a href="<?= base_url('catatan') ?>" class="nav-link <?= ($uri->getSegment(1) == 'catatan') ? 'active' : '' ?>">
-                    <i class="bi bi-chat-quote-fill"></i> Catatan & Absensi
-                </a>
                 
-                <a href="<?= base_url('deskripsiraport') ?>" class="nav-link <?= ($uri->getSegment(1) == 'deskripsiraport') ? 'active' : '' ?>">
-                    <i class="bi bi-journal-text"></i> Deskripsi Rapor
+                <?php 
+                    // Cek apakah sedang buka menu raport
+                    $isRaportOpen = in_array($uri->getSegment(1), ['nilai', 'ekskul', 'kokurikuler', 'catatan', 'rapor']);
+                ?>
+
+                <a class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#collapseRaport" role="button" aria-expanded="false" aria-controls="collapseRaport">
+                    <div class="d-flex align-items-center"><i class="bi bi-journal-check"></i> E-Raport</div>
+                    <i class="bi bi-chevron-down" style="font-size: 0.8rem;"></i>
                 </a>
 
-                <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-4 d-block" style="font-size: 0.7rem;">Ekstra</small>
+                <div class="collapse <?= $isRaportOpen ? 'show' : '' ?>" id="collapseRaport">
+                    <div class="d-flex flex-column">
+                        <a href="<?= base_url('rapor/setting') ?>" class="nav-link submenu-link <?= ($uri->getSegment(2) == 'setting') ? 'text-white' : '' ?>">
+                           Pengaturan Rapor
+                        </a>
+
+                        <a href="<?= base_url('nilai') ?>" class="nav-link submenu-link <?= ($uri->getSegment(1) == 'nilai') ? 'text-white' : '' ?>">
+                            Input Nilai
+                        </a>
+
+                        <a href="<?= base_url('ekskul') ?>" class="nav-link submenu-link <?= ($uri->getSegment(1) == 'ekskul') ? 'text-white' : '' ?>">
+                            Input Ekskul
+                        </a>
+
+                        <a href="<?= base_url('kokurikuler') ?>" class="nav-link submenu-link <?= ($uri->getSegment(1) == 'kokurikuler') ? 'text-white' : '' ?>">
+                            Projek Kokurikuler
+                        </a>
+
+                        <a href="<?= base_url('catatan') ?>" class="nav-link submenu-link <?= ($uri->getSegment(1) == 'catatan') ? 'text-white' : '' ?>">
+                            Catatan & Absensi
+                        </a>
+
+                        <a href="<?= base_url('rapor') ?>" class="nav-link submenu-link <?= ($uri->getSegment(1) == 'rapor' && $uri->getSegment(2) != 'setting') ? 'text-white' : '' ?>">
+                            Cetak Rapor
+                        </a>
+                    </div>
+                </div>
+
+                <hr class="sidebar-divider" style="border-color: rgba(255,255,255,0.1);">
+
+                <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-2 d-block" style="font-size: 0.7rem;">Administrasi</small>
 
                 <a href="<?= base_url('modulajar') ?>" class="nav-link <?= ($uri->getSegment(1) == 'modulajar') ? 'active' : '' ?>">
                     <i class="bi bi-file-earmark-text"></i> Modul Ajar
                 </a>
-                <a href="<?= base_url('tabungandigital') ?>" class="nav-link <?= ($uri->getSegment(1) == 'tabungandigital') ? 'active' : '' ?>">
-                    <i class="bi bi-wallet2"></i> Tabungan Siswa
+
+                <hr class="sidebar-divider" style="border-color: rgba(255,255,255,0.1);">
+
+                <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-2 d-block" style="font-size: 0.7rem;">Extra</small>
+
+                <a class="nav-link <?= ($uri->getSegment(1) == 'tutorial') ? 'active' : '' ?>" href="<?= base_url('tutorial') ?>">
+                    <i class="bi bi-question-circle"></i> Panduan & Tutorial
                 </a>
-                <a href="<?= base_url('kuis') ?>" class="nav-link <?= ($uri->getSegment(1) == 'kuis') ? 'active' : '' ?>">
-                    <i class="bi bi-patch-question"></i> Bank Soal
+                
+                <a href="<?= base_url('user/profile') ?>" class="nav-link <?= ($uri->getSegment(2) == 'profile') ? 'active' : '' ?>">
+                    <i class="bi bi-person-circle"></i> Profil Saya
                 </a>
-
-                <hr class="border-secondary my-4">
-
-                <li class="nav-item">
-                    <a href="<?= base_url('rapor') ?>" class="nav-link <?= ($uri->getSegment(1) == 'rapor') ? 'active' : '' ?>">
-                    <i class="bi bi-printer"></i> Cetak Rapor
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="<?= base_url('rapor/setting') ?>" class="nav-link <?= ($uri->getSegment(2) == 'setting') ? 'active' : '' ?>">
-                    <i class="bi bi-sliders"></i> Pengaturan Rapor
-                    </a>
-                </li>
+                
+                <a href="<?= base_url('logout') ?>" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
 
             <?php endif; // END IF GURU ?>
 
-
             <?php if ($role == 'admin') : ?>
-                <hr class="border-secondary my-4">
-             <?php endif; ?>
+                <a href="<?= base_url('user/profile') ?>" class="nav-link <?= ($uri->getSegment(2) == 'profile') ? 'active' : '' ?>">
+                    <i class="bi bi-person-circle"></i> Profil Saya
+                </a>
+                
+                <a href="<?= base_url('logout') ?>" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            <?php endif; ?>
 
-             <a href="<?= base_url('user/profile') ?>" class="nav-link <?= ($uri->getSegment(2) == 'profile') ? 'active' : '' ?>">
-                <i class="bi bi-person-circle"></i> Profil Saya
-            </a>
-            
-            <a href="<?= base_url('logout') ?>" class="nav-link text-danger">
-                <i class="bi bi-box-arrow-left"></i> Logout
-            </a>
         </div>
     </nav>
 
@@ -203,7 +214,6 @@
                     
                     <?php 
                         // --- LOGIKA AMBIL MASA AKTIF ---
-                        // Kita ambil langsung dari DB biar real-time
                         $db = \Config\Database::connect();
                         $idUser = session()->get('id');
                         $user = $db->table('users')->select('expired_date')->where('id', $idUser)->get()->getRowArray();
@@ -236,7 +246,8 @@
                      <span class="position-absolute bottom-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
                 </div>
             </div>
-            </header>
+
+        </header>
 
         <div class="content-body">
             <?= $this->renderSection('content') ?>
