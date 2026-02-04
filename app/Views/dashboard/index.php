@@ -2,15 +2,15 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-3 px-md-4 py-4">
 
-    <div class="row mb-5">
+    <div class="row mb-4 mb-md-5">
         <div class="col-12">
             <div class="card shadow-sm border-0 overflow-hidden" style="background: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%); color: white; border-radius: 15px;">
-                <div class="card-body p-5 d-flex justify-content-between align-items-center position-relative">
+                <div class="card-body p-4 p-md-5 d-flex justify-content-between align-items-center position-relative">
                     <div style="z-index: 2;">
-                        <h1 class="fw-bold display-6">Selamat Bertugas, <?= $nama_user ?? 'Bapak/Ibu Guru' ?>!</h1>
-                        <p class="lead mb-0 opacity-75" style="font-size: 1.1rem;">
+                        <h1 class="fw-bold display-6 fs-3 fs-md-1">Selamat Bertugas, <?= $nama_user ?? 'Bapak/Ibu Guru' ?>!</h1>
+                        <p class="lead mb-0 opacity-75 fs-6 fs-md-5" style="line-height: 1.4;">
                             Platform ini hadir menyederhanakan administrasi, agar Anda bisa fokus menginspirasi siswa.
                         </p>
                     </div>
@@ -20,18 +20,20 @@
         </div>
     </div>
 
-    <div class="row g-4 justify-content-center">
+    <div class="row g-3 g-md-4 justify-content-center">
 
         <div class="col-lg-6 col-md-12">
             <div class="card h-100 border-0 shadow-sm hover-card" style="border-radius: 15px; transition: all 0.3s;">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-3 p-3 text-center" style="width: 70px; height: 70px;">
+                    <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
+                        
+                        <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-3 p-3 text-center mb-3 mb-sm-0" style="width: 70px; height: 70px;">
                             <i class="bi bi-robot fs-2"></i>
                         </div>
-                        <div class="ms-4 flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h4 class="fw-bold mb-0 text-dark">Modul Ajar Cerdas</h4>
+                        
+                        <div class="ms-0 ms-sm-4 flex-grow-1 w-100">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center align-items-sm-start mb-2">
+                                <h4 class="fw-bold mb-2 mb-sm-0 text-dark">Modul Ajar Cerdas</h4>
                                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
                                     <i class="bi bi-stars me-1"></i> AI Powered
                                 </span>
@@ -43,6 +45,7 @@
                                 <i class="bi bi-magic me-2"></i> Buat Modul Sekarang
                             </a>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -51,13 +54,15 @@
         <div class="col-lg-6 col-md-12">
             <div class="card h-100 border-0 shadow-sm hover-card" style="border-radius: 15px; transition: all 0.3s;">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0 bg-success bg-opacity-10 text-success rounded-3 p-3 text-center" style="width: 70px; height: 70px;">
+                    <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
+                        
+                        <div class="flex-shrink-0 bg-success bg-opacity-10 text-success rounded-3 p-3 text-center mb-3 mb-sm-0" style="width: 70px; height: 70px;">
                             <i class="bi bi-file-earmark-spreadsheet fs-2"></i>
                         </div>
-                        <div class="ms-4 flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h4 class="fw-bold mb-0 text-dark">E-Raport Merdeka</h4>
+                        
+                        <div class="ms-0 ms-sm-4 flex-grow-1 w-100">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center align-items-sm-start mb-2">
+                                <h4 class="fw-bold mb-2 mb-sm-0 text-dark">E-Raport Merdeka</h4>
                                 <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
                                     <i class="bi bi-check-circle me-1"></i> SK BSKAP 046
                                 </span>
@@ -69,6 +74,7 @@
                                 <i class="bi bi-printer me-2"></i> Input & Cetak Nilai
                             </a>
                         </div>
+
                     </div>
                 </div>
             </div>
