@@ -125,6 +125,10 @@
                 
                 <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-2 d-block" style="font-size: 0.7rem;">Penilaian</small>
                 
+                <a href="<?= base_url('asesmen') ?>" class="nav-link <?= ($uri->getSegment(1) == 'asesmen') ? 'active' : '' ?>">
+                    <i class="bi bi-magic"></i> Generator Soal
+                </a>
+                
                 <?php 
                     // Cek apakah sedang buka menu raport
                     $isRaportOpen = in_array($uri->getSegment(1), ['nilai', 'ekskul', 'kokurikuler', 'catatan', 'rapor']);

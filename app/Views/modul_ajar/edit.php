@@ -51,17 +51,17 @@
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="utama-tab" data-toggle="tab" href="#utama" role="tab">
+                <a class="nav-link active" id="utama-tab" data-toggle="tab" data-bs-toggle="tab" href="#utama" role="tab">
                     <i class="bi bi-layers-fill mr-1"></i> 1. Modul Utama
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="materi-tab" data-toggle="tab" href="#materi" role="tab">
+                <a class="nav-link" id="materi-tab" data-toggle="tab" data-bs-toggle="tab" href="#materi" role="tab">
                     <i class="bi bi-file-earmark-text-fill mr-1"></i> 2. Materi & LKPD
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="asesmen-tab" data-toggle="tab" href="#asesmen" role="tab">
+                <a class="nav-link" id="asesmen-tab" data-toggle="tab" data-bs-toggle="tab" href="#asesmen" role="tab">
                     <i class="bi bi-clipboard-check-fill mr-1"></i> 3. Asesmen & Soal
                 </a>
             </li>
@@ -120,7 +120,7 @@
             <div class="tab-pane fade" id="materi" role="tabpanel">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">Bahan Bacaan (Utama)</h6>
+                        <h6 class="m-0 font-weight-bold">Media Pembelajaran</h6>
                     </div>
                     <div class="card-body">
                         <textarea id="summernote_materi" name="media_pembelajaran"><?= $modul['media_pembelajaran'] ?></textarea>
@@ -181,9 +181,26 @@
 
 </div>
 
+<style>
+    .nav-tabs .nav-link {
+        color: #6e707e !important;
+        background-color: #f8f9fc;
+        font-weight: 600;
+        border: 1px solid #dddfeb;
+    }
+    .nav-tabs .nav-link.active {
+        color: #4e73df !important;
+        background-color: #fff;
+        border-bottom-color: #fff;
+    }
+    .nav-tabs .nav-link:hover {
+        background-color: #eaecf4;
+        color: #2e59d9 !important;
+    }
+</style>
+
 <script>
     $(document).ready(function() {
-        // Inisialisasi Summernote dengan Toolbar yang disederhanakan
         var toolbarSimple = [
             ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
             ['para', ['ul', 'ol', 'paragraph']],
@@ -197,9 +214,14 @@
         $('#summernote_lampiran_materi').summernote({ height: 200, toolbar: toolbarSimple });
         $('#summernote_asesmen').summernote({ height: 150, toolbar: toolbarSimple });
         $('#summernote_lampiran_asesmen').summernote({ height: 300, toolbar: toolbarSimple });
+        
+        // SCRIPT TAMBAHAN: Paksa tab pindah jika atribut data-toggle gagal
+        $('#myTab a').on('click', function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
     });
 
-    // Fungsi Trigger Generate Lampiran dengan Konfirmasi
     function submitGenerateLampiran() {
         Swal.fire({
             title: 'Generate Lampiran?',
@@ -211,7 +233,6 @@
             confirmButtonText: 'Ya, Buatkan Sekarang!'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Tampilkan Loading Screen
                 Swal.fire({
                     title: 'AI Sedang Bekerja...',
                     html: 'Sedang meracik soal HOTS dan LKPD menarik...<br><b>Mohon tunggu 1-3 menit.</b>',
@@ -220,7 +241,6 @@
                     showConfirmButton: false,
                     allowOutsideClick: false
                 });
-                // Submit Form Hidden
                 document.getElementById('formGenerateLampiran').submit();
             }
         })
