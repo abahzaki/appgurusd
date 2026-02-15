@@ -85,7 +85,7 @@
                             <p class="text-muted small mb-3">
                                 Kelola nilai & cetak rapor sesuai regulasi Kurikulum Merdeka.
                             </p>
-                            <a href="<?= base_url('rapot') ?>" class="btn btn-success btn-sm w-100 rounded-pill shadow-sm py-2">
+                            <a href="<?= base_url('rapor/setting') ?>" class="btn btn-success btn-sm w-100 rounded-pill shadow-sm py-2">
                                 <i class="bi bi-printer me-2"></i> Input Nilai
                             </a>
                         </div>
