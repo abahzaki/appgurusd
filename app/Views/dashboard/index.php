@@ -4,6 +4,23 @@
 
 <div class="container-fluid px-3 px-md-4 py-4">
 
+    <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-left: 5px solid #ffc107 !important;">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading fw-bold mb-1">Perhatian: Lengkapi Data Master Terlebih Dahulu!</h5>
+                <p class="mb-0 small">
+                    Sebelum memulai pembuatan Modul Ajar, Soal, dan Rapor mohon pastikan Anda telah mengisi menu 
+                    <b>Data Master</b> (Identitas Sekolah, Data Kelas, Mata Pelajaran & Siswa). 
+                    Hal ini penting agar Nama Sekolah, NIP, dan Tanda Tangan dapat terisi otomatis pada dokumen.
+                </p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <div class="row mb-4 mb-md-5">
         <div class="col-12">
             <div class="card shadow-sm border-0 overflow-hidden" style="background: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%); color: white; border-radius: 15px;">

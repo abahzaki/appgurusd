@@ -40,13 +40,13 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1524088888679277');
+    fbq('init', '1907089003240531');
     
     // EVENT PURCHASE: Merekam user yang sudah berkomitmen daftar
     fbq('track', 'Lead');
     </script>
     <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1524088888679277&ev=PageView&noscript=1"
+    src="https://www.facebook.com/tr?id=1907089003240531&ev=PageView&noscript=1"
     /></noscript>
     </head>
 <body>
