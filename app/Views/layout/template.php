@@ -171,6 +171,18 @@
 
                 <small class="text-uppercase text-white-50 fw-bold ms-2 mb-2 mt-2 d-block" style="font-size: 0.7rem;">Administrasi</small>
 
+                <a href="<?= base_url('cetak_tp') ?>" class="nav-link <?= ($uri->getSegment(1) == 'cetak_tp') ? 'active' : '' ?>">
+                    <i class="bi bi-printer-fill"></i> Cetak TP & CP
+                </a>
+
+                <a href="<?= base_url('cetak_atp') ?>" class="nav-link <?= ($uri->getSegment(1) == 'cetak_atp') ? 'active' : '' ?>">
+                    <i class="bi bi-diagram-3-fill"></i> Cetak ATP (AI)
+                </a>
+
+                <a href="<?= base_url('cetak_promes') ?>" class="nav-link <?= ($uri->getSegment(1) == 'cetak_promes') ? 'active' : '' ?>">
+                    <i class="bi bi-calendar-range-fill"></i> Cetak Promes
+                </a>
+
                 <a href="<?= base_url('modulajar') ?>" class="nav-link <?= ($uri->getSegment(1) == 'modulajar') ? 'active' : '' ?>">
                     <i class="bi bi-file-earmark-text"></i> Modul Ajar
                 </a>
